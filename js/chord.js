@@ -22,6 +22,7 @@ function vexLine(x, y, x2, y2, w) {
   return line;
 }
 
+/*
 function vexRect(x, y, w, h) {
   var rect = document.createElementNS(svgns, "rect");
   rect.setAttributeNS(null, "x", x);
@@ -31,6 +32,7 @@ function vexRect(x, y, w, h) {
 
   return rect;
 }
+*/
 
 function vexCircle(x, y, r) {
   var circle = document.createElementNS(svgns, "circle");
@@ -214,10 +216,12 @@ ChordBox.prototype.lightBar = function(string_from, string_to, fret_num) {
   var y = this.y + (this.fret_spacing * (fret_num - 1)) + (this.fret_spacing / 4);
   var y_to = this.y + (this.fret_spacing * (fret_num - 1)) + ((this.fret_spacing / 4) * 3);
 
-  var rect = vexRect(x, y, (x_to - x), (y_to - y));
-  rect.setAttributeNS(null, "fill", this.metrics.chord_fill);
+  var halfStroke = ((y_to - y) / 2);
+  var capo = vexLine(x + halfStroke, y + halfStroke, x + (x_to - x) - halfStroke, y + halfStroke, y_to - y);
+  capo.setAttribute("stroke-linecap", "round");
+  capo.setAttribute("fill", this.metrics.chord_fill);
 
-  this.paper.appendChild(rect);
+  this.paper.appendChild(capo);
 
   return this;
 }
