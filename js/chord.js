@@ -5,9 +5,52 @@
  * Requires: Raphael JS (raphaeljs.com)
  */
 
-// Add a simple line method to Raphael.
-Raphael.prototype.vexLine = function(x, y, new_x, new_y) {
-  return this.path("M" + x + " " + y + "L" + new_x + " " + new_y);
+var svgns = "http://www.w3.org/2000/svg";
+
+function vexLine(x, y, x2, y2, w) {
+  var line = document.createElementNS(svgns, "line");
+  line.setAttribute("x1", x);
+  line.setAttribute("y1", y);
+  line.setAttribute("x2", x2);
+  line.setAttribute("y2", y2);
+  line.setAttribute("fill", "black"); // Set wedge color
+  line.setAttribute("stroke", "black"); // Outline wedge in black
+  if (w) {
+    line.setAttribute("stroke-width", w);
+  }
+
+  return line;
+}
+
+function vexRect(x, y, w, h) {
+  var rect = document.createElementNS(svgns, "rect");
+  rect.setAttributeNS(null, "x", x);
+  rect.setAttributeNS(null, "y", y);
+  rect.setAttributeNS(null, "width", w);
+  rect.setAttributeNS(null, "height", h);
+
+  return rect;
+}
+
+function vexCircle(x, y, r) {
+  var circle = document.createElementNS(svgns, "circle");
+  circle.setAttribute("cx", x);
+  circle.setAttribute("cy", y);
+  circle.setAttribute("r", r);
+  circle.setAttribute("stroke", "#000");
+  circle.setAttribute("fill", "#fff");
+
+  return circle;
+}
+
+function vexText(x, y, text) {
+  var txt = document.createElementNS(svgns, "text");
+  txt.setAttribute("x", x);
+  txt.setAttribute("y", y);
+  txt.textContent = text;
+  txt.setAttribute("style", "text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-family: Arial;");
+
+  return txt;
 }
 
 ChordBox = function(paper, x, y, width, height) {
@@ -15,8 +58,8 @@ ChordBox = function(paper, x, y, width, height) {
   this.x = x;
   this.y = y;
 
-  this.width = (!width) ? 100 : width;
-  this.height = (!height) ? 100 : height;
+  this.width = width || 100;
+  this.height = height || 100;
   this.tuning = ["E", "A", "D", "G", "B", "E"];
   this.num_strings = 6;
   this.num_frets = 5;
@@ -66,42 +109,49 @@ ChordBox.prototype.draw = function() {
 
   // Draw guitar bridge
   if (this.position <= 1) {
-    this.paper.vexLine(this.x, this.y - 1,
-                       this.x + (spacing * (this.num_strings - 1)),
-                       this.y - 1).
-      attr("stroke-width", this.metrics.bridge_stroke_width);
+    var line = vexLine(
+    this.x,
+    this.y - 1,
+    this.x + (spacing * (this.num_strings - 1)),
+    this.y - 1, this.metrics.bridge_stroke_width)
+    this.paper.appendChild(line)
   } else {
     // Draw position number
-    this.paper.text(this.x - (this.spacing / 2) - this.metrics.text_shift_x,
-                    this. y + (this.fret_spacing / 2) +
-                    this.metrics.text_shift_y +
-                    (this.fret_spacing * this.position_text),
-                    this.position).attr("font-size", this.metrics.font_size);
+    var posNum = vexText(this.x - (this.spacing / 2) - this.metrics.text_shift_x,
+    this.y + (this.fret_spacing / 2) + this.metrics.text_shift_y + (this.fret_spacing * this.position_text),
+    this.position);
+
+    posNum.setAttribute("font-size", this.metrics.font_size);
+    this.paper.appendChild(posNum);
   }
 
   // Draw strings
   for (var i = 0; i < this.num_strings; ++i) {
-    this.paper.vexLine(this.x + (spacing * i), this.y,
-      this.x + (spacing * i),
-      this.y + (fret_spacing * (this.num_frets)));
+    this.paper.appendChild(
+    vexLine(this.x + (spacing * i),
+    this.y,
+    this.x + (spacing * i),
+    this.y + (fret_spacing * (this.num_frets))));
   }
 
   // Draw frets
   for (var i = 0; i < this.num_frets + 1; ++i) {
-    this.paper.vexLine(this.x, this.y + (fret_spacing * i),
-      this.x + (spacing * (this.num_strings - 1)),
-      this.y + (fret_spacing * i));
+    this.paper.appendChild(
+    vexLine(this.x,
+    this.y + (fret_spacing * i),
+    this.x + (spacing * (this.num_strings - 1)),
+    this.y + (fret_spacing * i)));
   }
 
   // Draw tuning keys
   var tuning = this.tuning;
   for (var i = 0; i < tuning.length; ++i) {
-    var t = this.paper.text(
-      this.x + (this.spacing * i),
-      this.y +
-      ((this.num_frets + 1) * this.fret_spacing),
-      tuning[i]);
-    t.attr("font-size", this.metrics.font_size);
+    var t = vexText(
+    this.x + (this.spacing * i),
+    this.y + ((this.num_frets + 1) * this.fret_spacing),
+    tuning[i]);
+    t.setAttribute("font-size", this.metrics.font_size);
+    this.paper.appendChild(t);
   }
 
   // Draw chord
@@ -112,8 +162,8 @@ ChordBox.prototype.draw = function() {
   // Draw bars
   for (var i = 0; i < this.bars.length; ++i) {
     this.lightBar(this.bars[i].from_string,
-                  this.bars[i].to_string,
-                  this.bars[i].fret);
+    this.bars[i].to_string,
+    this.bars[i].fret);
   }
 }
 
@@ -134,15 +184,18 @@ ChordBox.prototype.lightUp = function(string_num, fret_num) {
   }
 
   var x = this.x + (this.spacing * string_num);
-  var y = this.y + (this.fret_spacing * (fret_num - 1)) +
-    (this.fret_spacing / 2);
-
+  var y = this.y + (this.fret_spacing * (fret_num - 1)) + (this.fret_spacing / 2);
+  var c;
   if (!mute) {
-    var c = this.paper.circle(x, y, this.metrics.circle_radius)
-    if (fret_num > 0) c.attr("fill", this.metrics.chord_fill);
+    c = vexCircle(x, y, this.metrics.circle_radius)
+    if (fret_num > 0) {
+        c.setAttribute("fill", this.metrics.chord_fill);
+    }
   } else {
-    c = this.paper.text(x, y, "X").attr("font-size", this.metrics.font_size);
+    c = vexText(x, y, "X");
+    c.setAttribute("font-size", this.metrics.font_size);
   }
+  this.paper.appendChild(c);
 
   return this;
 }
@@ -158,13 +211,13 @@ ChordBox.prototype.lightBar = function(string_from, string_to, fret_num) {
   var x = this.x + (this.spacing * string_from_num) - this.metrics.bar_shift_x;
   var x_to = this.x + (this.spacing * string_to_num) + this.metrics.bar_shift_x;
 
-  var y = this.y + (this.fret_spacing * (fret_num - 1)) +
-    (this.fret_spacing / 4);
-  var y_to = this.y + (this.fret_spacing * (fret_num - 1)) +
-    ((this.fret_spacing / 4) * 3);
+  var y = this.y + (this.fret_spacing * (fret_num - 1)) + (this.fret_spacing / 4);
+  var y_to = this.y + (this.fret_spacing * (fret_num - 1)) + ((this.fret_spacing / 4) * 3);
 
-  this.paper.rect(x, y, (x_to - x), (y_to - y), this.metrics.circle_radius).
-    attr("fill", this.metrics.chord_fill);
+  var rect = vexRect(x, y, (x_to - x), (y_to - y));
+  rect.setAttributeNS(null, "fill", this.metrics.chord_fill);
+
+  this.paper.appendChild(rect);
 
   return this;
 }

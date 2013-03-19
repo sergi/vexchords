@@ -5,16 +5,13 @@
     <link href='http://fonts.googleapis.com/css?family=Lobster+Two|Bowlby+One+SC|Swanky+and+Moo+Moo|Marvel' rel='stylesheet' type='text/css'>
     <link href='css/style.css' rel='stylesheet' type='text/css'>
 
-    <script src="js/support/jquery-1.6.2.min.js"></script>
-    <script src="js/support/raphael-min.js"></script>
-
     <script src="js/chord.js"></script>
     <script src="js/chart.js"></script>
 
 <script>
 
 function init() {
-  var container = $("#container");
+  var container = document.getElementById("container");
 
   // Display preset chords (open chords)
   for (var i = 0; i < chord_chart.length; ++i) {
@@ -22,10 +19,10 @@ function init() {
     var section = createSectionElement(section_struct);
 
     for (var j = 0; j < section_struct.chords.length; ++j) {
-      section.append(createChordElement(section_struct.chords[j]));
+      section.appendChild(createChordElement(section_struct.chords[j]));
     }
 
-    container.append(section);
+    container.appendChild(section);
   }
 
   // Display shape chords for all keys
@@ -43,14 +40,14 @@ function init() {
   createShapeChart(keys_A, container, shapes_A, "A");
 }
 
-$(function() { init() });
+setTimeout(init);
 
 </script>
 </head>
 
 <body>
   <div class="topbar" style="clear:left; padding-top: 1px;">
-    <center><a href="http://github.com/0xfe/vexchords">fork me on github</a></center>
+    <center><a href="http://github.com/sergi/vexchords">fork me on github</a></center>
   </div>
   <div id="wrapper">
 

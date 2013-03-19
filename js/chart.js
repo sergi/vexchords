@@ -289,37 +289,55 @@ function createChordStruct(key, string, shape) {
   }
 }
 
+function createCanvas(width, height) {
+  var svg = document.createElementNS(
+      "http://www.w3.org/2000/svg", "svg");
+  //svg.setAttribute("version", "1.1");
+  svg.setAttribute("width", width);
+  svg.setAttribute("height", height);
+  svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+  return svg;
+}
+
 function createChordElement(chord_struct) {
-  var chordbox = $('<div>').addClass('chord');
-  var chordcanvas = $('<div>');
-  var chordname = $('<div>').addClass('chordname');
+  var chordbox = document.createElement("div");
+  chordbox.className = 'chord';
 
-  chordbox.append(chordcanvas);
-  chordbox.append(chordname);
-  chordname.append(chord_struct.name);
+  var chordcanvas = document.createElement("div");
+  var chordname = document.createElement("div");
+  chordname.className = "chordname";
 
-  var paper = Raphael(chordcanvas[0], 150, 140);
+  chordbox.appendChild(chordcanvas);
+  chordbox.appendChild(chordname);
+  chordname.innerText = chord_struct.name;
+
+  var paper = chordcanvas.appendChild(createCanvas(150, 140));
   var chord = new ChordBox(paper, 30, 30);
 
   chord.setChord(
-      chord_struct.chord,
-      chord_struct.position,
-      chord_struct.bars,
-      chord_struct.position_text);
+  chord_struct.chord,
+  chord_struct.position,
+  chord_struct.bars,
+  chord_struct.position_text);
   chord.draw();
 
   return chordbox;
 }
 
 function createSectionElement(section_struct) {
-  var section = $('<div>').addClass('section');
-  var section_title = $('<div>').addClass('title');
-  var section_desc = $('<div>').addClass('description');
+  var section = document.createElement("div");
+  section.className = 'section';
 
-  section.append(section_title);
-  section.append(section_desc);
-  section_title.append(section_struct.section);
-  section_desc.append(section_struct.description);
+  var section_title = document.createElement("div")
+  section_title.className = 'title';
+  var section_desc = document.createElement("div");
+  section_desc.className = "description"; //$('<div>').addClass('description');
+
+  section.appendChild(section_title);
+  section.appendChild(section_desc);
+  section_title.innerText = section_struct.section;
+  section_desc.innerText = section_struct.description;
 
   return section;
 }
@@ -329,15 +347,15 @@ function createShapeChart(keys, container, shapes, shape) {
     var key = keys[i];
     var section = createSectionElement({
       section: key + " Chords (" + shape + " Shape)",
-      description: shape + "-Shaped barre chords in the key of " + key + "." });
+      description: shape + "-Shaped barre chords in the key of " + key + "."
+    });
 
     for (var j = 0; j < shapes.length; ++j) {
       var chord_elem = createChordElement(
-        createChordStruct(key, shape, shapes[j]));
-      section.append(chord_elem);
+      createChordStruct(key, shape, shapes[j]));
+      section.appendChild(chord_elem);
     }
 
-    container.append(section);
+    container.appendChild(section);
   }
 }
-
